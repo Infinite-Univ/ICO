@@ -20,6 +20,11 @@ contract Whitelist {
     PRICE = _price * 10**DECIMALS;
   }
 
+  /**
+   * 
+   * @dev function to avoid smart contracts to call this contract
+   * 
+   */
   modifier onlyWallet(){
     require(msg.sender == tx.origin, "Whitelist: Sender must be a wallet.");
     _;
