@@ -55,6 +55,16 @@ contract Whitelist {
     hasPurchased[_sender] = true;
   }
 
+  /**
+   * 
+   * @dev returns true if the user has purchased the pre sale
+   * 
+   * @param _user address of the user to verify if has purchased
+   *
+   */
+  function userHasPurchased(address _user) external view returns(bool){
+    return hasPurchased[_user];
+  }
 
     
 
