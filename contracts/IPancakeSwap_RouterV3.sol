@@ -3,10 +3,6 @@ pragma solidity ^0.8.9;
 
 interface IPancake_SmartRouter{
 
-    function createPool(
-        address tokenA,
-        address tokenB,
-        uint24 fee
-    ) external returns (address pool);
+    function increaseLiquidity(struct INonfungiblePositionManagerStruct.IncreaseLiquidityParams params) external payable returns (uint128 liquidity, uint256 amount0, uint256 amount1)
 
 }
