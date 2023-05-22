@@ -15,16 +15,19 @@ contract Presale1 {
   enum Kits {Kit1, Kit2}
 
   //~~~~~ Immutable variables ~~~~~
-  uint256 public immutable PRICE_KIT_ONE;
-  uint256 public immutable PRICE_KIT_TWO;
-  uint256 public immutable MAX_SUPPLY_KIT_ONE;
-  uint256 public immutable MAX_SUPPLY_KIT_TWO;
+  uint256 private immutable PRICE_KIT_ONE;
+  uint256 private immutable PRICE_KIT_TWO;
+  uint256 private immutable MAX_SUPPLY_KIT_ONE;
+  uint256 private immutable MAX_SUPPLY_KIT_TWO;
 
   //~~~~~ State variables ~~~~~
-  address[] public buyersKitOne;
-  address[] public buyersKitTwo;
+  uint256 private kitOneSold;
+  uint256 private kitTwoSold;
+  address[] private buyersKitOne;
+  address[] private buyersKitTwo;
   mapping(address => bool) hasPurchasedKitOne;
   mapping(address => bool) hasPurchasedKitTwo;
+
 
   constructor(uint256 _price1, uint256 _price2, uint256 _maxSupply1, uint256 _maxSupply2){
     PRICE_KIT_ONE = _price1 * 10**DECIMALS;
@@ -32,6 +35,8 @@ contract Presale1 {
     MAX_SUPPLY_KIT_ONE = _maxSupply1;
     MAX_SUPPLY_KIT_TWO = _maxSupply2;
   }
+
+  //~~~~~ Modifier ~~~~~
 
   /**
    * 
@@ -43,11 +48,13 @@ contract Presale1 {
     _;
   }
 
+  //~~~~~ External/Public Functions ~~~~~
+
   /**
    * 
-   * @dev users can buy the pre sale by sending USDT
+   * @dev users can buy the kitOne by sending "PRICE_KIT_ONE" USDT
    * 
-   * NOTE: msg.sender must approve 'PRICE' quantity of tokens first
+   * NOTE: msg.sender must approve "PRICE_KIT_ONE" quantity of tokens first
    * 
    * Requirements:
    * - msg.sender must be an EOA (wallet).
@@ -57,6 +64,8 @@ contract Presale1 {
    */
   function buyKitOne() external onlyWallet() {
     address _sender = msg.sender;
+    kitOneSold++;
+    require(kitOneSold <= MAX_SUPPLY_KIT_ONE, "Whitelist: kit one sold out");
     require(!hasPurchasedKitOne[_sender], "Whitelist: You have already purchased kit one.");
     require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_ONE));
     buyersKitOne.push(_sender);
@@ -65,9 +74,9 @@ contract Presale1 {
 
   /**
    * 
-   * @dev users can buy the pre sale by sending USDT
+   * @dev users can buy the kitTwo by sending "PRICE_KIT_TWO" USDT
    * 
-   * NOTE: msg.sender must approve 'PRICE_KIT_TWO' quantity of tokens first
+   * NOTE: msg.sender must approve "PRICE_KIT_TWO" quantity of tokens first
    * 
    * Requirements:
    * - msg.sender must be an EOA (wallet).
@@ -77,11 +86,15 @@ contract Presale1 {
    */
   function buyKitTwo() external onlyWallet() {
     address _sender = msg.sender;
-    require(!hasPurchasedKitTwo[_sender], "Whitelist: You have already purchased kit one.");
+    kitTwoSold++;
+    require(kitTwoSold <= MAX_SUPPLY_KIT_TWO, "Whitelist: kit two sold out");
+    require(!hasPurchasedKitTwo[_sender], "Whitelist: You have already purchased kit two.");
     require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_TWO));
     buyersKitTwo.push(_sender);
     hasPurchasedKitTwo[_sender] = true;
   }
+
+  //~~~~~ View/Pure Functions ~~~~~
 
   /**
    * 
