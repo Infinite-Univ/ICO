@@ -2,13 +2,16 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IPancakeSwap_Router02.sol";
+import "./IPancakeSwap_Factory.sol";
 
 contract Presale1 {
    
   //~~~~~ MUST CHANGE FOR MAINNET ADDRESSES ~~~~~
   address constant private USDT = 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee; //TESTNET
-  address constant private PANCAKESWAP_FACTORY_V3 = 0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865; //TESTNET
-  address constant private PANCAKESWAP_ROUTER_V3 = 0x9a489505a00cE272eAa5e07Dba6491314CaE3796; //TESTNET
+  address constant private INFINITE_UNIVERSE_ERC20 = 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee;
+  address constant private PANCAKESWAP_FACTORY_V2 = 0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865; //TESTNET
+  address constant private PANCAKESWAP_ROUTER_V2 = 0x9a489505a00cE272eAa5e07Dba6491314CaE3796; //TESTNET
   uint256 constant public DECIMALS = 18;
 
   //~~~~~ Enum ~~~~~
@@ -48,6 +51,8 @@ contract Presale1 {
     _;
   }
 
+  
+
   //~~~~~ External/Public Functions ~~~~~
 
   /**
@@ -55,7 +60,9 @@ contract Presale1 {
    * @dev users can buy the kitOne or kitTwo 
    * by approving "PRICE_KIT_ONE" or "PRICE_KIT_TWO" in USDT
    * 
-   * NOTE: msg.sender must approve "PRICE_KIT_ONE" or "PRICE_KIT_TWO" quantity of tokens first
+   * NOTE: 
+   * -msg.sender must approve "PRICE_KIT_ONE" or "PRICE_KIT_TWO" quantity of tokens first
+   * -when everything is sold out, the contract will automatically create the pair and add liquidity
    * 
    * Requirements:
    * - msg.sender must be an EOA (wallet).
@@ -79,6 +86,15 @@ contract Presale1 {
       require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_TWO));
       buyersKitTwo.push(_sender);
       hasPurchasedKitTwo[_sender] = true;
+    }
+    _closeRound(kitOneSold, kitTwoSold);
+  }
+
+  function _closeRound(uint256 _kitOneSold, uint256 _kitTwoSold) internal {
+    if(_kitOneSold == MAX_SUPPLY_KIT_ONE && _kitTwoSold == MAX_SUPPLY_KIT_TWO){
+      address pair = _createPair();
+      bool result = _addLiquidity(pair);
+      require(result);
     }
   }
 
@@ -146,15 +162,34 @@ contract Presale1 {
     return kitTwoSold;
   }
 
+  function _createPair() internal returns(address){
+        address pair = IPancakeFactory(PANCAKESWAP_FACTORY_V2).createPair(
+            address(USDT),
+            address(INFINITE_UNIVERSE_ERC20)
+        );
+        require(pair != address(0),"Launchpad: Failed creating pair");
+        return pair;
+    }
 
-  //TO DO
-  function _createPair() internal returns(address pair) {
+  function _addLiquidity() internal returns(bool){
+    uint256 balanceUSDT = IERC20(USDT).balanceOf(address(this));
+    uint256 balanceInfinite = IERC20(INFINITE_UNIVERSE_ERC20).balanceOf(address(this));
+
+    IERC20(USDT).approve(PANCAKESWAP_ROUTER_V2, balanceUSDT);
+    IERC20(INFINITE_UNIVERSE_ERC20).approve(PANCAKESWAP_ROUTER_V2, balanceInfinite);
+
+    (, , uint256 liquidity) = IPancakeRouter02(PANCAKESWAP_ROUTER_V2).addLiquidity(
+        address(USDT),
+        address(INFINITE_UNIVERSE_ERC20),
+        balanceUSDT,
+        balanceInfinite,
+        balanceUSDT,
+        balanceInfinite,
+        address(this), //future pair's owner
+        block.timestamp + 10 minutes);
     
-  }
-
-  //TO DO
-  function _addLiquidity() internal{
-
+    require(liquidity > 0, "Launchpad: Failed adding liquidity to the LP");
+    return true;
   }
     
 
