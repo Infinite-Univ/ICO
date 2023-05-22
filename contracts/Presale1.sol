@@ -8,11 +8,11 @@ import "./IPancakeSwap_Factory.sol";
 contract Presale1 {
    
   //~~~~~ MUST CHANGE FOR MAINNET ADDRESSES ~~~~~
-  address constant private USDT = 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee; //TESTNET
-  address constant private INFINITE_UNIVERSE_ERC20 = 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee;
-  address constant private PANCAKESWAP_FACTORY_V2 = 0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865; //TESTNET
-  address constant private PANCAKESWAP_ROUTER_V2 = 0x9a489505a00cE272eAa5e07Dba6491314CaE3796; //TESTNET
-  uint256 constant public DECIMALS = 18;
+  IERC20 constant private USDT = IERC20(0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee); //TESTNET
+  IERC20 constant private SUPER_NOVA = IERC20(0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee); //TESTNET
+  address constant private PANCAKESWAP_FACTORY_V2 = 0x6725F303b657a9451d8BA641348b6761A6CC7a17; //TESTNET
+  address constant private PANCAKESWAP_ROUTER_V2 = 0xD99D1c33F9fC3444f8101754aBC46c52416550D1; //TESTNET
+  uint256 constant private DECIMALS = 18;
 
   //~~~~~ Enum ~~~~~
   enum Kits {KitOne, KitTwo}
@@ -30,7 +30,7 @@ contract Presale1 {
   address[] private buyersKitTwo;
   mapping(address => bool) hasPurchasedKitOne;
   mapping(address => bool) hasPurchasedKitTwo;
-
+  address pairCreated;
 
   constructor(uint256 _price1, uint256 _price2, uint256 _maxSupply1, uint256 _maxSupply2){
     PRICE_KIT_ONE = _price1 * 10**DECIMALS;
@@ -43,7 +43,7 @@ contract Presale1 {
 
   /**
    * 
-   * @dev modifier to avoid smart contracts to call this contract
+   * @dev Modifier to avoid smart contracts to call this contract
    * 
    */
   modifier onlyWallet(){
@@ -51,23 +51,21 @@ contract Presale1 {
     _;
   }
 
-  
-
   //~~~~~ External/Public Functions ~~~~~
 
   /**
    * 
-   * @dev users can buy the kitOne or kitTwo 
+   * @dev Users can buy the kitOne or kitTwo 
    * by approving "PRICE_KIT_ONE" or "PRICE_KIT_TWO" in USDT
    * 
    * NOTE: 
-   * -msg.sender must approve "PRICE_KIT_ONE" or "PRICE_KIT_TWO" quantity of tokens first
-   * -when everything is sold out, the contract will automatically create the pair and add liquidity
+   * -Msg.sender must approve "PRICE_KIT_ONE" or "PRICE_KIT_TWO" quantity of tokens first
+   * -When everything is sold out, the contract will automatically create the pair and add liquidity
    * 
    * Requirements:
-   * - msg.sender must be an EOA (wallet).
-   * - the user can purchase only x1 kitOne and/or x1 kitTwo per wallet.
-   * - user must approve USDT first to call this function.
+   *  -Msg.sender must be an EOA (wallet).
+   *  -The user can purchase only x1 kitOne and/or x1 kitTwo per wallet.
+   *  -User must approve USDT first to call this function.
    * 
    */
   function buyKit(Kits _kitToBuy) external onlyWallet() {
@@ -90,97 +88,57 @@ contract Presale1 {
     _closeRound(kitOneSold, kitTwoSold);
   }
 
+  //~~~~~ Internal/Private Functions ~~~~~
+
+  /**
+   * 
+   * @param _kitOneSold Current kits one that has been sold
+   * @param _kitTwoSold Current kits two that has been sold
+   * 
+   * NOTE
+   * When both kits are sold out:
+   *    1. The contract will automatically create the pair USDT/SuperNova
+   *    2. The contract will automatically add all the funds it posses to the pair USDT/SuperNova
+   *
+   */
   function _closeRound(uint256 _kitOneSold, uint256 _kitTwoSold) internal {
     if(_kitOneSold == MAX_SUPPLY_KIT_ONE && _kitTwoSold == MAX_SUPPLY_KIT_TWO){
-      address pair = _createPair();
-      bool result = _addLiquidity(pair);
+      address _pair = _createPair();
+      bool result = _addLiquidity();
       require(result);
+      pairCreated = _pair;
     }
   }
 
-  //~~~~~ View/Pure Functions ~~~~~
-
   /**
    * 
-   * @dev returns true if the user has purchased kitOne
-   * 
-   * @param _user address of the user to verify if has purchased
-   *
-   */
-  function userHasPurchasedKitOne(address _user) external view returns(bool){
-    return hasPurchasedKitOne[_user];
-  }
-
-  /**
-   * 
-   * @dev returns true if the user has purchased kitTwo
-   * 
-   * @param _user address of the user to verify if has purchased
-   *
-   */
-  function userHasPurchasedKitTwo(address _user) external view returns(bool){
-    return hasPurchasedKitTwo[_user];
-  }
-
-  /**
-   * 
-   * @dev returns address of the buyer at the index
-   * 
-   * @param _index index to search in the array of buyers of kitOne
-   *
-   */
-  function buyersOfKitOne(uint256 _index) external view returns(address){
-    return buyersKitOne[_index];
-  }
-
-  /**
-   * 
-   * @dev returns address of the buyer at the index
-   * 
-   * @param _index index to search in the array of buyers of kitTwo
-   *
-   */
-  function buyersOfKitTwo(uint256 _index) external view returns(address){
-    return buyersKitTwo[_index];
-  }
-
-  /**
-   * 
-   * @dev returns current kits one that has been sold
+   * @dev This function create the pair USDT/SuperNova
    * 
    */
-  function kitsOneSold() external view returns(uint256){
-    return kitOneSold;
-  }
-
-  /**
-   * 
-   * @dev returns current kits one that has been sold
-   * 
-   */
-  function kitsTwoSold() external view returns(uint256){
-    return kitTwoSold;
-  }
-
   function _createPair() internal returns(address){
-        address pair = IPancakeFactory(PANCAKESWAP_FACTORY_V2).createPair(
+        address _pair = IPancakeFactory(PANCAKESWAP_FACTORY_V2).createPair(
             address(USDT),
-            address(INFINITE_UNIVERSE_ERC20)
+            address(SUPER_NOVA)
         );
-        require(pair != address(0),"Launchpad: Failed creating pair");
-        return pair;
-    }
+        require(_pair != address(0),"Launchpad: Failed creating pair");
+        return _pair;
+  }
 
+  /**
+   * 
+   * @dev This function adds liquidity to the pair USDT/SuperNova
+   * 
+   */
   function _addLiquidity() internal returns(bool){
-    uint256 balanceUSDT = IERC20(USDT).balanceOf(address(this));
-    uint256 balanceInfinite = IERC20(INFINITE_UNIVERSE_ERC20).balanceOf(address(this));
+    uint256 balanceUSDT = (USDT).balanceOf(address(this));
+    uint256 balanceInfinite = (SUPER_NOVA).balanceOf(address(this));
 
-    IERC20(USDT).approve(PANCAKESWAP_ROUTER_V2, balanceUSDT);
-    IERC20(INFINITE_UNIVERSE_ERC20).approve(PANCAKESWAP_ROUTER_V2, balanceInfinite);
+    (USDT).approve(PANCAKESWAP_ROUTER_V2, balanceUSDT);
+    (SUPER_NOVA).approve(PANCAKESWAP_ROUTER_V2, balanceInfinite);
 
     (, , uint256 liquidity) = IPancakeRouter02(PANCAKESWAP_ROUTER_V2).addLiquidity(
         address(USDT),
-        address(INFINITE_UNIVERSE_ERC20),
+        address(SUPER_NOVA),
         balanceUSDT,
         balanceInfinite,
         balanceUSDT,
@@ -191,6 +149,80 @@ contract Presale1 {
     require(liquidity > 0, "Launchpad: Failed adding liquidity to the LP");
     return true;
   }
-    
+
+  //~~~~~ View/Pure Functions ~~~~~
+
+  /**
+   * 
+   * @dev Returns true if the user has purchased kitOne
+   * 
+   * @param _user Address of the user to verify if has purchased
+   *
+   */
+  function userHasPurchasedKitOne(address _user) external view returns(bool){
+    return hasPurchasedKitOne[_user];
+  }
+
+  /**
+   * 
+   * @dev Returns true if the user has purchased kitTwo
+   * 
+   * @param _user Address of the user to verify if has purchased
+   *
+   */
+  function userHasPurchasedKitTwo(address _user) external view returns(bool){
+    return hasPurchasedKitTwo[_user];
+  }
+
+  /**
+   * 
+   * @dev Returns address of the buyer at the index
+   * 
+   * @param _index Index to search in the array of buyers of kitOne
+   *
+   */
+  function buyersOfKitOne(uint256 _index) external view returns(address){
+    return buyersKitOne[_index];
+  }
+
+  /**
+   * 
+   * @dev Returns address of the buyer at the index
+   * 
+   * @param _index Index to search in the array of buyers of kitTwo
+   *
+   */
+  function buyersOfKitTwo(uint256 _index) external view returns(address){
+    return buyersKitTwo[_index];
+  }
+
+  /**
+   * 
+   * @dev Returns current kits one that has been sold
+   * 
+   */
+  function kitsOneSold() external view returns(uint256){
+    return kitOneSold;
+  }   
+
+  /**
+   * 
+   * @dev Returns current kits one that has been sold
+   * 
+   */
+  function kitsTwoSold() external view returns(uint256){
+    return kitTwoSold;
+  }
+
+  /**
+   * 
+   * @dev This function should return address(0)
+   * unless the round has been closed (sold out),
+   * in that case, it must return the address of the pair USDT/SuperNova
+   * 
+   */
+  function pair() external view returns(address){
+    return pairCreated;
+  } 
 
 }
