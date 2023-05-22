@@ -12,7 +12,7 @@ contract Presale1 {
   uint256 constant public DECIMALS = 18;
 
   //~~~~~ Enum ~~~~~
-  enum Kits {Kit1, Kit2}
+  enum Kits {KitOne, KitTwo}
 
   //~~~~~ Immutable variables ~~~~~
   uint256 private immutable PRICE_KIT_ONE;
@@ -52,46 +52,34 @@ contract Presale1 {
 
   /**
    * 
-   * @dev users can buy the kitOne by sending "PRICE_KIT_ONE" USDT
+   * @dev users can buy the kitOne or kitTwo 
+   * by approving "PRICE_KIT_ONE" or "PRICE_KIT_TWO" in USDT
    * 
-   * NOTE: msg.sender must approve "PRICE_KIT_ONE" quantity of tokens first
-   * 
-   * Requirements:
-   * - msg.sender must be an EOA (wallet).
-   * - the user can purchase only x1 kitOne per wallet.
-   * - user must approve "PRICE_KIT_ONE" quantity of USDT for this contract
-   * 
-   */
-  function buyKitOne() external onlyWallet() {
-    address _sender = msg.sender;
-    kitOneSold++;
-    require(kitOneSold <= MAX_SUPPLY_KIT_ONE, "Whitelist: kit one sold out");
-    require(!hasPurchasedKitOne[_sender], "Whitelist: You have already purchased kit one.");
-    require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_ONE));
-    buyersKitOne.push(_sender);
-    hasPurchasedKitOne[_sender] = true;
-  }
-
-  /**
-   * 
-   * @dev users can buy the kitTwo by sending "PRICE_KIT_TWO" USDT
-   * 
-   * NOTE: msg.sender must approve "PRICE_KIT_TWO" quantity of tokens first
+   * NOTE: msg.sender must approve "PRICE_KIT_ONE" or "PRICE_KIT_TWO" quantity of tokens first
    * 
    * Requirements:
    * - msg.sender must be an EOA (wallet).
-   * - the user can purchase only x1 kitTwo per wallet.
-   * - user must approve "PRICE_KIT_TWO" quantity of USDT for this contract
+   * - the user can purchase only x1 kitOne and/or x1 kitTwo per wallet.
+   * - user must approve USDT first to call this function.
    * 
    */
-  function buyKitTwo() external onlyWallet() {
+  function buyKit(Kits _kitToBuy) external onlyWallet() {
     address _sender = msg.sender;
-    kitTwoSold++;
-    require(kitTwoSold <= MAX_SUPPLY_KIT_TWO, "Whitelist: kit two sold out");
-    require(!hasPurchasedKitTwo[_sender], "Whitelist: You have already purchased kit two.");
-    require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_TWO));
-    buyersKitTwo.push(_sender);
-    hasPurchasedKitTwo[_sender] = true;
+    if(_kitToBuy == Kits.KitOne){
+      kitOneSold++;
+      require(kitOneSold <= MAX_SUPPLY_KIT_ONE, "Whitelist: kit one sold out");
+      require(!hasPurchasedKitOne[_sender], "Whitelist: You have already purchased kit one.");
+      require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_ONE));
+      buyersKitOne.push(_sender);
+      hasPurchasedKitOne[_sender] = true;
+    }else{
+      kitTwoSold++;
+      require(kitTwoSold <= MAX_SUPPLY_KIT_TWO, "Whitelist: kit two sold out");
+      require(!hasPurchasedKitTwo[_sender], "Whitelist: You have already purchased kit two.");
+      require(IERC20(USDT).transferFrom(_sender,address(this),PRICE_KIT_TWO));
+      buyersKitTwo.push(_sender);
+      hasPurchasedKitTwo[_sender] = true;
+    }
   }
 
   //~~~~~ View/Pure Functions ~~~~~
@@ -140,10 +128,28 @@ contract Presale1 {
     return buyersKitTwo[_index];
   }
 
+  /**
+   * 
+   * @dev returns current kits one that has been sold
+   * 
+   */
+  function kitsOneSold() external view returns(uint256){
+    return kitOneSold;
+  }
+
+  /**
+   * 
+   * @dev returns current kits one that has been sold
+   * 
+   */
+  function kitsTwoSold() external view returns(uint256){
+    return kitTwoSold;
+  }
+
 
   //TO DO
   function _createPair() internal returns(address pair) {
-
+    
   }
 
   //TO DO
