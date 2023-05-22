@@ -118,6 +118,28 @@ contract Presale1 {
     return hasPurchasedKitTwo[_user];
   }
 
+  /**
+   * 
+   * @dev returns address of the buyer at the index
+   * 
+   * @param _index index to search in the array of buyers of kitOne
+   *
+   */
+  function buyersOfKitOne(uint256 _index) external view returns(address){
+    return buyersKitOne[_index];
+  }
+
+  /**
+   * 
+   * @dev returns address of the buyer at the index
+   * 
+   * @param _index index to search in the array of buyers of kitTwo
+   *
+   */
+  function buyersOfKitTwo(uint256 _index) external view returns(address){
+    return buyersKitTwo[_index];
+  }
+
 
   //TO DO
   function _createPair() internal returns(address pair) {
