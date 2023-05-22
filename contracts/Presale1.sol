@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Whitelist {
+contract Presale1 {
    
   //~~~~~ MUST CHANGE FOR MAINNET ADDRESSES ~~~~~
   address constant private USDT = 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee; //TESTNET
@@ -22,7 +22,7 @@ contract Whitelist {
 
   /**
    * 
-   * @dev function to avoid smart contracts to call this contract
+   * @dev modifier to avoid smart contracts to call this contract
    * 
    */
   modifier onlyWallet(){
