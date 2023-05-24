@@ -6,14 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract SuperNova is ERC20 {
 
     //~~~~~ Immutable/Constant variables ~~~~~
-    uint256 constant private TOTAL_SUPPLY = 100_000_000 * 10**18;
+    uint256 constant private MAX_SUPPLY = 100_000_000 * 10**18;
 
     constructor() ERC20("SuperNova","SPN"){
-        _mint(msg.sender,TOTAL_SUPPLY);
+        _mint(msg.sender,MAX_SUPPLY);
     }
 
-    function totalSupply() public view virtual override returns (uint256) {
-        return TOTAL_SUPPLY;
-    } 
+    function maxSupply() external pure returns (uint256) {
+        return MAX_SUPPLY;
+    }
 
 }
