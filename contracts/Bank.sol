@@ -5,15 +5,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./SuperNova.sol";
 
 contract Bank {
-
     //~~~~~ Immutable/Constant variables ~~~~~
-    IERC20 immutable private TOKEN_SUPERNOVA;
+    IERC20 private immutable TOKEN_SUPERNOVA;
 
-    constructor(){
+    constructor() {
         TOKEN_SUPERNOVA = new SuperNova();
     }
-
-
-
-
 }

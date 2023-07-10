@@ -9,3 +9,6 @@ typechain-types
 cache
 artifacts
 
+# Ignore .env
+.env
+.example.env
