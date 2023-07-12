@@ -8,8 +8,8 @@ import "./IPancakeSwap_Factory.sol";
 contract Presale1 {
    
   //~~~~~ MUST CHANGE FOR MAINNET ADDRESSES ~~~~~
-  IERC20 constant private USDT = IERC20(0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee); //TESTNET
-  IERC20 constant private SUPER_NOVA = IERC20(0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee); //TESTNET
+  IERC20 constant private USDT; //TESTNET
+  IERC20 constant private SUPER_NOVA;//TESTNET
   address constant private PANCAKESWAP_FACTORY_V2 = 0x6725F303b657a9451d8BA641348b6761A6CC7a17; //TESTNET
   address constant private PANCAKESWAP_ROUTER_V2 = 0xD99D1c33F9fC3444f8101754aBC46c52416550D1; //TESTNET
   uint256 constant private DECIMALS = 18;
@@ -32,11 +32,13 @@ contract Presale1 {
   mapping(address => bool) hasPurchasedKitTwo;
   address pairCreated;
 
-  constructor(uint256 _price1, uint256 _price2, uint256 _maxSupply1, uint256 _maxSupply2){
+  constructor(uint256 _price1, uint256 _price2, uint256 _maxSupply1, uint256 _maxSupply2, USDT _addressTokenUSD, SUPER_NOVA _addressTokenSuperNova){
     PRICE_KIT_ONE = _price1 * 10**DECIMALS;
     PRICE_KIT_TWO = _price2 * 10**DECIMALS;
     MAX_SUPPLY_KIT_ONE = _maxSupply1;
     MAX_SUPPLY_KIT_TWO = _maxSupply2;
+    USDT = _addressTokenUSD;
+    SUPER_NOVA = _addressTokenSuperNova;
   }
 
   //~~~~~ Modifier ~~~~~
