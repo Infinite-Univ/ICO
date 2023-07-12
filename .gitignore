@@ -11,4 +11,3 @@ artifacts
 
 # Ignore .env
 .env
-.example.env
