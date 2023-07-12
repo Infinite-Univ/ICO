@@ -13,7 +13,7 @@ y reclamar su porcentaje mensual.
 # Requerimientos
 Modificar el nombre de `.example.env` a `.env` y configurar el archivo `.env` para establecer la `wallet account`
 
-Node version : `v19.9.0`
+Node version : `v16.20.0`
 
 # Instalacion
 ```shell
