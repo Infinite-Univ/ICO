@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IPancakeSwap_Router02.sol";
 import "./IPancakeSwap_Factory.sol";
 
-contract Presale1 {
+contract MockPresale1 {
     //~~~~~ MUST CHANGE FOR MAINNET ADDRESSES ~~~~~
     IERC20 private USDT; //TESTNET
     IERC20 private SUPER_NOVA; //TESTNET
