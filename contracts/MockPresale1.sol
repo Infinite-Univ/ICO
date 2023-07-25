@@ -114,7 +114,7 @@ contract MockPresale1 {
             buyersKitTwo.push(_sender);
             hasPurchasedKitTwo[_sender] = true;
         }
-        _closeRound(kitOneSold, kitTwoSold);
+        //_closeRound(kitOneSold, kitTwoSold);
     }
 
     //~~~~~ Internal/Private Functions ~~~~~

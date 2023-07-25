@@ -20,9 +20,10 @@ describe('Testing Smart Contracts', function () {
 
     // Values for "MockPresale1" constructor
     const PRICE_1 = 1;
-    const PRICE_2 = 1;
+    const PRICE_2 = 2;
     const MAX_SUPPLY_1 = 5;
     const MAX_SUPPLY_2 = 7;
+    const PRICE_IN_ETH = 0.0001;
 
     describe('MockUSDT', () => {
 
@@ -30,7 +31,7 @@ describe('Testing Smart Contracts', function () {
             const Contract = await hre.ethers.getContractFactory(NAME_CONTRACT_MOCK_USDT);
             const contract = await Contract.deploy();
             contractUSDT = await contract.deployed();
-            expect(contractUSDT.deployTransaction.confirmations).to.be.equal(1);
+            expect(contractUSDT.deployTransaction.confirmations).to.be.equal(0);
         });
 
     });
@@ -41,7 +42,7 @@ describe('Testing Smart Contracts', function () {
             const Contract = await hre.ethers.getContractFactory(NAME_CONTRACT_MOCK_SUPER_NOVA);
             const contract = await Contract.deploy();
             contractSuerNova = await contract.deployed();
-            expect(contractSuerNova.deployTransaction.confirmations).to.be.equal(1);
+            expect(contractSuerNova.deployTransaction.confirmations).to.be.equal(0);
         })
 
     });
@@ -59,57 +60,53 @@ describe('Testing Smart Contracts', function () {
                 contractSuerNova.address
             );
             contractMock = await contract.deployed();
-            expect(contractMock.deployTransaction.confirmations).to.be.equal(1);
+            expect(contractMock.deployTransaction.confirmations).to.be.equal(0);
+        });
+        
+        it('Approve tokens to use USDT', async function () {
+            const amount = hre.ethers.utils.parseEther((PRICE_IN_ETH * 10).toString());
+            const response = await contractUSDT.approve(contractMock.address, amount);
+            expect(response.confirmations).to.be.equal(0);
         });
 
-        it('Approving tokens to use', async function () {
-            
-            //expect().to.be() // confirmation success
-        });
-
-        /*
         it('Check kits solds to be 0', async function () {
-
             const responseKitOne = (await contractMock.kitsOneSold()).toString();
             const responseKitTwo = (await contractMock.kitsTwoSold()).toString();
-            expect(responseKitOne).to.be.equal('0'); // expect transaction confirmation
-            expect(responseKitTwo).to.be.equal('0'); // expect transaction confirmation
-
+            expect(responseKitOne).to.be.equal('0');
+            expect(responseKitTwo).to.be.equal('0');
         });
-        */
-        /*
-                it('Buy kit one', async function () {
-        
-                    const responseBuyKitOne = await contractMock.buyKit(KIT_ONE);
-                    const responseBuyKitTwo = await contractMock.buyKit(KIT_TWO);
-                    console.log(responseBuyKitOne);
-                    //expect().to.be(); // expect transaction confirmation
-                    //expect().to.be(); // expect different balance
-                });
-                */
+
+        it('Checking balance available', async function() {
+            const [owner] = await ethers.getSigners();
+            const response = await contractUSDT.balanceOf(owner.address);
+            const responseSP = await contractSuerNova.balanceOf(owner.address);
+            console.log('balance tokens USDT => ', response);
+            console.log('balance tokens Super Nova => ', responseSP);
+        });
+
+
+        it('Buy kit one and two', async function () {
+            const responseBuyKitOne = await contractMock.buyKit(KIT_ONE);
+            const responseBuyKitTwo = await contractMock.buyKit(KIT_TWO);
+            console.log('respuesta kit uno vendido =>', responseBuyKitOne);
+            console.log('respuesta kit dos vendido => ', responseBuyKitTwo);
+            expect(responseBuyKitOne.confirmations).to.be.equal(0);
+            expect(responseBuyKitTwo.confirmations).to.be.equal(0);
+        });
+
+        it('Re-Check kits solds', async () => {
+            const responseKitOne = (await contractMock.kitsOneSold()).toString();
+            const responseKitTwo = (await contractMock.kitsTwoSold()).toString();
+            console.log('resultado kit uno vendidos => ', responseKitOne);
+            console.log('resultado kit dos vendidos => ', responseKitTwo);
+            expect(responseKitOne).to.be.equal(1);
+            expect(responseKitTwo).to.be.equal(1);
+        });
 
         /*
                 it('Trying to buy more than max supply of kit one', async function () {
         
                     expect().to.be(); // expect transaction revert
-                });
-        
-                it('Buy kit two', async function () {
-        
-                    expect().to.be(); // expect transaction confirmation
-                    expect().to.be(); // expect different balance
-                });
-        
-        
-                it('Trying to buy more than max supply of kit two', async function () {
-        
-                    expect().to.be(); // expect transaction revert
-                });
-        
-                it('Check kitsOneSold and kitsTwoSold', async function () {
-        
-                    expect().to.be(); // expect transaction confirmation
-                    expect().to.be(); // expect have the same lenght of buyers counter
                 });
         */
 
