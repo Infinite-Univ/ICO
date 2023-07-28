@@ -23,7 +23,6 @@ describe('Testing Smart Contracts', function () {
     const PRICE_2 = 2;
     const MAX_SUPPLY_1 = 5;
     const MAX_SUPPLY_2 = 7;
-    const PRICE_IN_ETH = 0.0001;
 
     describe('MockUSDT', () => {
 
@@ -62,9 +61,12 @@ describe('Testing Smart Contracts', function () {
             contractMock = await contract.deployed();
             expect(contractMock.deployTransaction.confirmations).to.be.equal(0);
         });
-        
+
         it('Approve tokens to use USDT', async function () {
-            const amount = hre.ethers.utils.parseEther((PRICE_IN_ETH * 10).toString());
+            const aBN = ethers.BigNumber.from("100000000000000");
+            const bBN = ethers.BigNumber.from("10");
+            const amount = aBN.mul(bBN); // 0,001 ETH
+            console.log('monto habilitado => ', amount);
             const response = await contractUSDT.approve(contractMock.address, amount);
             expect(response.confirmations).to.be.equal(0);
         });
@@ -76,7 +78,7 @@ describe('Testing Smart Contracts', function () {
             expect(responseKitTwo).to.be.equal('0');
         });
 
-        it('Checking balance available', async function() {
+        it('Checking balance available', async function () {
             const [owner] = await ethers.getSigners();
             const response = await contractUSDT.balanceOf(owner.address);
             const responseSP = await contractSuerNova.balanceOf(owner.address);
@@ -84,13 +86,15 @@ describe('Testing Smart Contracts', function () {
             console.log('balance tokens Super Nova => ', responseSP);
         });
 
-
-        it('Buy kit one and two', async function () {
+        it('Buy kit one', async function () {
             const responseBuyKitOne = await contractMock.buyKit(KIT_ONE);
-            const responseBuyKitTwo = await contractMock.buyKit(KIT_TWO);
             console.log('respuesta kit uno vendido =>', responseBuyKitOne);
-            console.log('respuesta kit dos vendido => ', responseBuyKitTwo);
             expect(responseBuyKitOne.confirmations).to.be.equal(0);
+        });
+
+        it('Buy kit two', async function () {
+            const responseBuyKitTwo = await contractMock.buyKit(KIT_TWO);
+            console.log('respuesta kit dos vendido => ', responseBuyKitTwo);
             expect(responseBuyKitTwo.confirmations).to.be.equal(0);
         });
 
