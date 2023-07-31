@@ -88,31 +88,27 @@ describe('Testing Smart Contracts', function () {
 
         it('Buy kit one', async function () {
             const responseBuyKitOne = await contractMock.buyKit(KIT_ONE);
-            console.log('respuesta kit uno vendido =>', responseBuyKitOne);
             expect(responseBuyKitOne.confirmations).to.be.equal(0);
         });
 
         it('Buy kit two', async function () {
             const responseBuyKitTwo = await contractMock.buyKit(KIT_TWO);
-            console.log('respuesta kit dos vendido => ', responseBuyKitTwo);
             expect(responseBuyKitTwo.confirmations).to.be.equal(0);
         });
 
         it('Re-Check kits solds', async () => {
             const responseKitOne = (await contractMock.kitsOneSold()).toString();
             const responseKitTwo = (await contractMock.kitsTwoSold()).toString();
-            console.log('resultado kit uno vendidos => ', responseKitOne);
-            console.log('resultado kit dos vendidos => ', responseKitTwo);
+            console.log('kit one sold => ', responseKitOne);
+            console.log('kit two sold => ', responseKitTwo);
             expect(responseKitOne).to.be.equal(1);
             expect(responseKitTwo).to.be.equal(1);
         });
 
-        /*
-                it('Trying to buy more than max supply of kit one', async function () {
-        
-                    expect().to.be(); // expect transaction revert
-                });
-        */
+        it('Trying to buy more than max supply of kit one', async function () {
+            await expect(contractMock.buyKit(KIT_ONE)).to.be.reverted;
+            await expect(contractMock.buyKit(KIT_TWO)).to.be.reverted;
+        });
 
     });
 
