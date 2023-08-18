@@ -114,7 +114,7 @@ contract MockPresale1 {
             buyersKitTwo.push(_sender);
             hasPurchasedKitTwo[_sender] = true;
         }
-        //_closeRound(kitOneSold, kitTwoSold);
+        _closeRound(kitOneSold, kitTwoSold);
     }
 
     //~~~~~ Internal/Private Functions ~~~~~
@@ -261,5 +261,24 @@ contract MockPresale1 {
      */
     function pair() external view returns (address) {
         return pairCreated;
+    }
+
+
+    /**
+     *
+     * @dev This function should return the balance of MockUSDT
+     *
+     */
+    function getMockUSDTBalance() public view returns(uint256) {
+        return (USDT).balanceOf(address(this));
+    }
+
+    /**
+     *
+     * @dev This function should return the balance of SuperNova
+     *
+     */
+    function getSuperNovaBalance() public view returns(uint256) {
+        return (SUPER_NOVA).balanceOf(address(this));
     }
 }
